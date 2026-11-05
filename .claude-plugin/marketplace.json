@@ -7,7 +7,7 @@
       "name": "99-website",
       "source": "./plugins/99-website",
       "description": "Setup check, business intake and keyword-driven site map skills for building 99-scoring Astro sites on Cloudflare.",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "author": { "name": "AI Ranking" },
       "license": "MIT"
     }

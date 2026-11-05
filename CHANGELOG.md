@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.1 (Swedish routes)
+
+- **URL parts follow the site language.** New `scripts/lib/routes.mjs` holds one table per language (`en`, `sv`). With `language_code: sv` in `business/client.md` the plan uses `/tjanster/`, `/omraden/`, `/blogg/`, `/om-oss/`, `/kontakt/`, `/integritetspolicy/` and `/tack/`. Unknown languages fall back to English.
+- `validate-sitemap.mjs` reads the language from `../business/client.md` (or `--lang sv`) instead of requiring English prefixes.
+- `site-data.mjs` writes `lang` and `routes` into `site.json`, taken from the plan, so templates never hard-code a page URL.
+- `scaffold-site.mjs` names the thank-you page after the language (`tack.astro` for Swedish); the starter's Header, Footer, CtaBand, 404 and contact function read `site.routes`.
+- `lighthouse-gate.mjs` guesses page types for Swedish hub segments in sitemap mode.
+- Skills `keyword-sitemap`, `astro-build` and `seo-foundation` describe the language-aware URLs and `site.routes`.
+- Tests: `routes.test.mjs` plus Swedish cases in the validator, site-data, scaffold and gate tests.
+
 ## 0.1.0 (2026-09-29, Stage 1)
 
 Tested end to end on two sites: a real rebuild (myinclusion.com.au, NDIS, Australia) and a fictional new build (Cedar & Stone Landscapes, Charlotte NC).

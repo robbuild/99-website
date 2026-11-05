@@ -103,3 +103,30 @@ test("turnstile_site_key from client.md reaches business, blank stays blank", ()
   const c = CLIENT.replace("hours: Mon-Fri 7am-5pm\n", "hours: Mon-Fri 7am-5pm\nturnstile_site_key: 0x4AAAAAAAtest\n");
   assert.equal(buildSiteData({ siteMapCsv: MAP, clientMd: c, siteUrl: "http://x" }).business.turnstile_site_key, "0x4AAAAAAAtest");
 });
+
+const SV_CLIENT = CLIENT.replace("location_code: 2840", "location_code: 2752\nlanguage_code: sv");
+const SV_MAP = `url,slug,page_name,title_tag,page_type,parent,target_keyword,volume,kd,intent,primary_cta,phase,data_source,notes
+/,home,Startsida,Rörmokare Uppsala | X,home,,rörmokare uppsala,880,0,commercial,call,now,datawise,
+/tjanster/,tjanster,Tjänster,Tjänster | X,hub,/,,,,,call,now,datawise,
+/tjanster/stambyte/,stambyte,Stambyte,Stambyte Uppsala | X,service,/tjanster/,stambyte,2400,12,informational,call,now,datawise,
+/omraden/,omraden,Områden,Områden | X,hub,/,,,,,call,now,datawise,
+/omraden/knivsta/,knivsta,Knivsta,Rörmokare Knivsta | X,area,/omraden/,rörmokare knivsta,90,0,commercial,call,now,datawise,
+/blogg/,blogg,Blogg,Blogg | X,hub,/,,,,,call,now,datawise,
+/blogg/vattenlacka/,vattenlacka,Vattenläcka,Vattenläcka | X,blog,/blogg/,vattenläcka,880,0,informational,call,now,datawise,
+/om-oss/,om-oss,Om oss,Om oss | X,about,/,,,,,call,now,datawise,
+/kontakt/,kontakt,Kontakt,Kontakt | X,contact,/,,,,,call,now,datawise,
+/integritetspolicy/,integritetspolicy,Integritetspolicy,Integritetspolicy | X,legal,/,,,,,call,now,datawise,
+`;
+
+test("site.routes is read from the plan, so a Swedish plan gives Swedish routes", () => {
+  const d = buildSiteData({ siteMapCsv: SV_MAP, clientMd: SV_CLIENT, siteUrl: "http://localhost:4321" });
+  assert.equal(d.lang, "sv");
+  assert.deepEqual(d.routes, { services: "/tjanster/", areas: "/omraden/", blog: "/blogg/", about: "/om-oss/", contact: "/kontakt/", legal: "/integritetspolicy/", thanks: "/tack/", apiContact: "/api/contact" });
+});
+
+test("site.routes falls back to the language default for pages the plan does not have", () => {
+  const d = buildSiteData({ siteMapCsv: MAP, clientMd: CLIENT, siteUrl: "http://localhost:4321" });
+  assert.equal(d.routes.contact, "/contact/");
+  assert.equal(d.routes.thanks, "/thanks/");
+  assert.equal(d.routes.legal, "/privacy-policy/");
+});

@@ -1,6 +1,8 @@
 {
   "site_url": "http://localhost:4321",
   "noindex": true,
+  "lang": "en",
+  "routes": { "services": "/services/", "areas": "/areas-served/", "blog": "/blog/", "about": "/about/", "contact": "/contact/", "legal": "/privacy-policy/", "thanks": "/thanks/", "apiContact": "/api/contact" },
   "business": {
     "name": "Cedar & Stone Landscapes",
     "phone": "(704) 555-0142",

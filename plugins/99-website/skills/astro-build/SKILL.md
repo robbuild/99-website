@@ -44,5 +44,8 @@ The first Cedar & Stone build was called "VERY boring, looks AI-generated". The 
 ## Step 4: Hand over to seo-foundation
 Say: "Copy written for <n> pages, build passes. Next: /99-website:seo-foundation."
 
+## Page URLs
+Link to other pages through `site.routes` (`routes.services`, `routes.areas`, `routes.blog`, `routes.about`, `routes.contact`, `routes.legal`, `routes.thanks`), which `site-data.mjs` writes into `site.json` from the plan and the site language. Never type `/services/` or `/tjanster/` into a template or component. Links written inside page copy (`[text](/path/)`) must match the plan; `check-links.mjs` catches a mismatch.
+
 ## House rules
 - No em dashes. Fewer, truer words beat filler. Every page at least 50% unique vs its siblings (the checker enforces it).

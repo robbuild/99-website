@@ -1,14 +1,15 @@
 ---
 import site from "../data/site.json";
 const b = site.business;
+const r = site.routes; // page URLs from the site plan (language aware), see scripts/lib/routes.mjs
 const cta = b.primary_cta === "form"
-  ? { href: "/contact/", label: "Get a free estimate" }
+  ? { href: r.contact, label: "Get a free estimate" }
   : { href: `tel:${b.phone.replace(/[^+\d]/g, "")}`, label: `Call ${b.phone}` };
 const links = [
-  { href: "/services/", label: "Services" },
-  ...(site.nav.areas.length ? [{ href: "/areas-served/", label: "Areas" }] : []),
-  { href: "/about/", label: "About" },
-  { href: "/contact/", label: "Contact" },
+  { href: r.services, label: "Services" },
+  ...(site.nav.areas.length ? [{ href: r.areas, label: "Areas" }] : []),
+  { href: r.about, label: "About" },
+  { href: r.contact, label: "Contact" },
 ];
 ---
 <header class="border-b border-ink/10 bg-paper">

@@ -1,5 +1,7 @@
 // Cloudflare Pages Function: POST /api/contact. Honeypot, Turnstile, then one email through Resend.
 // Env: TURNSTILE_SECRET, RESEND_API_KEY, LEAD_TO, LEAD_FROM, PHONE, LOG_ONLY ("1" = no email, for demos).
+import site from "../../src/data/site.json" with { type: "json" };
+const THANKS = site.routes?.thanks ?? "/thanks/"; // /tack/ on a Swedish site
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 
 export async function handleContact({ form, env, fetchFn = fetch, ip = "" }) {
@@ -13,13 +15,13 @@ export async function handleContact({ form, env, fetchFn = fetch, ip = "" }) {
   });
   if (!(await ts.json()).success) return { status: 400, body: "Please complete the check and try again." };
   const lead = ["name", "phone", "email", "town", "service", "message"].map((k) => `<p><b>${k}</b>: ${esc(get(k))}</p>`).join("");
-  if (env.LOG_ONLY === "1") { console.log("lead (LOG_ONLY)", get("name"), get("service")); return { status: 303, location: "/thanks/" }; }
+  if (env.LOG_ONLY === "1") { console.log("lead (LOG_ONLY)", get("name"), get("service")); return { status: 303, location: THANKS }; }
   const r = await fetchFn("https://api.resend.com/emails", {
     method: "POST", headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
     body: JSON.stringify({ from: env.LEAD_FROM, to: env.LEAD_TO, reply_to: get("email") || undefined, subject: `New estimate request: ${get("service") || "website"}`, html: lead }),
   });
   if (!r.ok) return { status: 502, body: `Sorry, the form did not send. Please call us${env.PHONE ? ` on ${env.PHONE}` : ""}.` };
-  return { status: 303, location: "/thanks/" };
+  return { status: 303, location: THANKS };
 }
 
 export async function onRequestPost({ request, env }) {

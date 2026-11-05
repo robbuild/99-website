@@ -1,26 +1,31 @@
 #!/usr/bin/env node
 // Validate research/site-map.csv against the 99-website page-plan rules.
-//   node validate-sitemap.mjs sites/<slug>/research/site-map.csv [--json] [--crawl research/crawl/pages.jsonl]
+//   node validate-sitemap.mjs sites/<slug>/research/site-map.csv [--json] [--crawl research/crawl/pages.jsonl] [--lang sv]
 //   --crawl (rebuild mode): old URLs may keep their path.
+//   --lang: URL parts follow the site language (scripts/lib/routes.mjs). Default: language_code in ../business/client.md, else en.
 import fs from "node:fs";
+import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { parseCsv } from "./lib/csv.mjs";
 import { kwIndex } from "./lib/keyword.mjs";
+import { routesFor, hubUrls, prefixes, flatUrl } from "./lib/routes.mjs";
+import { parseFrontMatter } from "./site-data.mjs";
 
 export const SITEMAP_COLUMNS = ["url", "slug", "page_name", "title_tag", "page_type", "parent", "target_keyword",
   "volume", "kd", "intent", "primary_cta", "phase", "data_source", "notes"];
 export const PAGE_TYPES = ["home", "hub", "service", "area", "blog", "about", "contact", "legal"];
 const KEYWORD_TYPES = new Set(["home", "service", "area", "blog"]);
 const INTENTS = ["transactional", "commercial", "informational", "navigational"];
-const HUB_URLS = ["/services/", "/areas-served/", "/blog/"];
-const PREFIX = { service: "/services/", area: "/areas-served/", blog: "/blog/" };
 const SOURCES = ["datawise", "dataforseo", "manual"];
 
 // existingPaths (rebuild mode): URLs the old site already has. They keep their path even when it
-// breaks the /services/, /areas-served/ pattern, because moving a page that already ranks is risk
+// breaks the pattern (/services/ or /tjanster/, depending on the language), because moving a page that already ranks is risk
 // with no upside. New pages still follow the pattern.
-export function validateSiteMap(text, { existingPaths = [] } = {}) {
+export function validateSiteMap(text, { existingPaths = [], lang = "en" } = {}) {
   const existing = new Set(existingPaths);
+  const routes = routesFor(lang);
+  const HUB_URLS = hubUrls(routes);
+  const PREFIX = prefixes(routes);
   const errors = [];
   const warnings = [];
   let parsed;
@@ -50,7 +55,7 @@ export function validateSiteMap(text, { existingPaths = [] } = {}) {
       const kept = existing.has(u);
       if (t === "hub" && !HUB_URLS.includes(u) && !kept) err(i, "url", `a hub url must be one of ${HUB_URLS.join(", ")}`);
       if (PREFIX[t] && !kept && !(u.startsWith(PREFIX[t]) && segs.length === 2)) err(i, "url", `a ${t} url must look like ${PREFIX[t]}{slug}/`);
-      if (["about", "contact", "legal"].includes(t) && segs.length !== 1) err(i, "url", `a ${t} url must be one level deep, like /${t}/`);
+      if (["about", "contact", "legal"].includes(t) && !kept && u !== flatUrl(routes, t)) err(i, "url", `a ${t} url must be ${flatUrl(routes, t)} for language "${lang}"`);
       if (!["home", "hub"].includes(t) && segs.length && r.slug !== segs[segs.length - 1]) err(i, "slug", `"${r.slug}" must equal the last url part "${segs[segs.length - 1]}"`);
     }
     if (seenUrl.has(u)) err(i, "url", `duplicate of row ${seenUrl.get(u)}`); else seenUrl.set(u, i + 2);
@@ -106,7 +111,11 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const existingPaths = ci > -1
     ? fs.readFileSync(process.argv[ci + 1], "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l).path)
     : [];
-  const res = validateSiteMap(fs.readFileSync(process.argv[2], "utf8"), { existingPaths });
+  const li = process.argv.indexOf("--lang");
+  const clientMd = path.join(path.dirname(process.argv[2]), "../business/client.md");
+  const lang = li > -1 ? process.argv[li + 1]
+    : fs.existsSync(clientMd) ? parseFrontMatter(fs.readFileSync(clientMd, "utf8")).language_code || "en" : "en";
+  const res = validateSiteMap(fs.readFileSync(process.argv[2], "utf8"), { existingPaths, lang });
   if (process.argv.includes("--json")) console.log(JSON.stringify({ errors: res.errors, warnings: res.warnings }, null, 2));
   else {
     for (const e of res.errors) console.log(`ERROR  row ${e.row} ${e.field}: ${e.message}`);

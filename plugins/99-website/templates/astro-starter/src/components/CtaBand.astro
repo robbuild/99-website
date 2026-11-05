@@ -8,7 +8,7 @@ const tel = `tel:${b.phone.replace(/[^+\d]/g, "")}`;
   <h2 class="mt-0 text-2xl">{heading}</h2>
   <p class="mt-2">{text}</p>
   <p class="mt-4 flex flex-wrap gap-3">
-    {b.primary_cta === "form" && <a href="/contact/" class="rounded-md bg-paper px-4 py-2 font-medium text-ink hover:bg-surface">Get a free estimate</a>}
+    {b.primary_cta === "form" && <a href={site.routes.contact} class="rounded-md bg-paper px-4 py-2 font-medium text-ink hover:bg-surface">Get a free estimate</a>}
     <a href={tel} class="rounded-md border border-paper px-4 py-2 font-medium hover:bg-paper hover:text-ink">Call {b.phone}</a>
   </p>
 </section>

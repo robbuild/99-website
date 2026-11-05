@@ -84,3 +84,37 @@ test("title must contain the target keyword, in its first half", () => {
   const ok = GOOD.map((r, i) => (i === 2 ? { ...r, target_keyword: "pavers charlotte nc", title_tag: "Pavers Charlotte NC: Patios and Walkways" } : r));
   assert.deepEqual(validateSiteMap(csv(ok)).errors, []);
 });
+
+const SV = [
+  row({ url: "/", slug: "home", page_name: "Startsida", title_tag: "Rörmokare Uppsala | Lindqvist Rör", page_type: "home", target_keyword: "rörmokare uppsala", volume: "880", kd: "0", intent: "commercial" }),
+  row({ url: "/tjanster/", slug: "tjanster", page_name: "Tjänster", title_tag: "Tjänster | Lindqvist Rör", page_type: "hub", parent: "/" }),
+  row({ url: "/tjanster/stambyte/", slug: "stambyte", page_name: "Stambyte", title_tag: "Stambyte Uppsala | Lindqvist Rör", page_type: "service", parent: "/tjanster/", target_keyword: "stambyte", volume: "2400", kd: "12", intent: "informational" }),
+  row({ url: "/omraden/", slug: "omraden", page_name: "Områden", title_tag: "Områden | Lindqvist Rör", page_type: "hub", parent: "/" }),
+  row({ url: "/omraden/knivsta/", slug: "knivsta", page_name: "Knivsta", title_tag: "Rörmokare Knivsta | Lindqvist Rör", page_type: "area", parent: "/omraden/", target_keyword: "rörmokare knivsta", volume: "90", kd: "0", intent: "commercial" }),
+  row({ url: "/blogg/", slug: "blogg", page_name: "Blogg", title_tag: "Blogg | Lindqvist Rör", page_type: "hub", parent: "/" }),
+  row({ url: "/blogg/vattenlacka/", slug: "vattenlacka", page_name: "Vattenläcka", title_tag: "Vattenläcka: så agerar du | Lindqvist Rör", page_type: "blog", parent: "/blogg/", target_keyword: "vattenläcka", volume: "880", kd: "0", intent: "informational" }),
+  row({ url: "/om-oss/", slug: "om-oss", page_name: "Om oss", title_tag: "Om Lindqvist Rör", page_type: "about", parent: "/" }),
+  row({ url: "/kontakt/", slug: "kontakt", page_name: "Kontakt", title_tag: "Kontakta Lindqvist Rör", page_type: "contact", parent: "/" }),
+  row({ url: "/integritetspolicy/", slug: "integritetspolicy", page_name: "Integritetspolicy", title_tag: "Integritetspolicy | Lindqvist Rör", page_type: "legal", parent: "/" }),
+];
+
+test("a Swedish plan passes with lang sv, URL parts follow the language", () => {
+  assert.deepEqual(validateSiteMap(csv(SV), { lang: "sv" }).errors, []);
+  assert.deepEqual(validateSiteMap(csv(SV), { lang: "sv-SE" }).errors, []);
+});
+
+test("the same Swedish plan fails as English, and an English plan fails as Swedish", () => {
+  assert.ok(validateSiteMap(csv(SV), { lang: "en" }).errors.some((e) => e.field === "url"));
+  assert.ok(validateSiteMap(csv(GOOD), { lang: "sv" }).errors.some((e) => /\/tjanster\//.test(e.message) || /\/kontakt\//.test(e.message)));
+});
+
+test("about, contact and legal must sit on the language's own route", () => {
+  const bad = SV.map((r) => (r.page_type === "contact" ? { ...r, url: "/contact/", slug: "contact" } : r));
+  const res = validateSiteMap(csv(bad), { lang: "sv" });
+  assert.ok(res.errors.some((e) => e.field === "url" && /\/kontakt\//.test(e.message)));
+  assert.deepEqual(validateSiteMap(csv(bad), { lang: "sv", existingPaths: ["/contact/"] }).errors, []);
+});
+
+test("no lang means English, as before", () => {
+  assert.deepEqual(validateSiteMap(csv(GOOD)).errors, []);
+});

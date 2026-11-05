@@ -2,6 +2,7 @@
 // Lighthouse on the PRODUCTION build (dist/, served by this script), mobile, median of 3 per page. 99 = all four categories.
 //   node lighthouse-gate.mjs sites/<slug> [--label draft] [--all] [--runs 3] [--min 99]
 import fs from "node:fs";
+import { SEGMENT_TYPES } from "./lib/routes.mjs";
 import path from "node:path";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
@@ -43,7 +44,7 @@ export function pickPages(site, { all = false } = {}) {
 }
 
 // Any Astro site without our site.json: take the pages from the built sitemap and guess the type from the path.
-const TYPE_BY_SEGMENT = { services: "service", "areas-served": "area", areas: "area", locations: "area", blog: "blog" };
+const TYPE_BY_SEGMENT = { ...SEGMENT_TYPES, areas: "area", locations: "area" };
 export function pagesFromSitemap(xml) {
   return [...xml.matchAll(/<loc>([\s\S]*?)<\/loc>/gi)].map((m) => {
     const url = new URL(m[1].trim()).pathname;

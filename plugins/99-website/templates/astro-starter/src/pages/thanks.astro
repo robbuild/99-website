@@ -3,7 +3,7 @@
 import Base from "../layouts/Base.astro";
 import site from "../data/site.json";
 const b = site.business;
-const page = { url: "/thanks/", title: `Thanks, we got your request | ${b.name}`, type: "legal", page_name: "Thanks", parent: "/" };
+const page = { url: site.routes.thanks, title: `Thanks, we got your request | ${b.name}`, type: "legal", page_name: "Thanks", parent: "/" };
 const content = { description: `Thanks for your estimate request. ${b.name} will call you back within one business day.` };
 const tel = `tel:${b.phone.replace(/[^+\d]/g, "")}`;
 ---

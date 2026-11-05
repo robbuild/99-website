@@ -29,5 +29,8 @@ If `research/rebuild-redirects.csv` exists, `site/public/_redirects` must hold e
 ## Step 5: Report
 Print: pages checked, gates passed, and the list of fixes made. Update project-state rows `astro-build` and `seo-foundation` to done.
 
+## Page URLs
+Link to other pages through `site.routes` (`routes.services`, `routes.areas`, `routes.blog`, `routes.about`, `routes.contact`, `routes.legal`, `routes.thanks`), which `site-data.mjs` writes into `site.json` from the plan and the site language. Never type `/services/` or `/tjanster/` into a template or component. Links written inside page copy (`[text](/path/)`) must match the plan; `check-links.mjs` catches a mismatch.
+
 ## House rules
 - No em dashes. Never add `noindex` to pass a check, never hide content, never drop a page.

@@ -5,6 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { parseCsv } from "./lib/csv.mjs";
+import { routesFor } from "./lib/routes.mjs";
 
 export function parseFrontMatter(text) {
   const m = text.match(/^---\r?\n([\s\S]*?)\r?\n---/);
@@ -30,7 +31,17 @@ const isUrl = (v) => /^https:\/\/\S+$/.test(v || "");
 
 export function buildSiteData({ siteMapCsv, clientMd, siteUrl, index = false, testimonials = [] }) {
   const fm = parseFrontMatter(clientMd);
-  const rows = parseCsv(siteMapCsv).rows.filter((r) => r.phase === "now");
+  const allRows = parseCsv(siteMapCsv).rows;
+  const rows = allRows.filter((r) => r.phase === "now");
+  // Where the templates link to: read from the plan itself, so it always matches the real URLs. A page the plan
+  // does not have falls back to the language's default route (scripts/lib/routes.mjs).
+  const def = routesFor(fm.language_code);
+  const hubOf = (type, fallback) => allRows.find((r) => r.page_type === type)?.parent || `/${fallback}/`;
+  const flat = (type) => allRows.find((r) => r.page_type === type)?.url || `/${def[type]}/`;
+  const routes = {
+    services: hubOf("service", def.services), areas: hubOf("area", def.areas), blog: hubOf("blog", def.blog),
+    about: flat("about"), contact: flat("contact"), legal: flat("legal"), thanks: `/${def.thanks}/`, apiContact: "/api/contact",
+  };
   const pages = rows.map((r) => ({
     url: r.url, slug: r.slug, type: r.page_type, page_name: r.page_name, title: r.title_tag,
     keyword: r.target_keyword, parent: r.parent, intent: r.intent, file: pageFile(r.url),
@@ -39,6 +50,8 @@ export function buildSiteData({ siteMapCsv, clientMd, siteUrl, index = false, te
   return {
     site_url: siteUrl.replace(/\/$/, ""),
     noindex: !index,
+    lang: fm.language_code || "en",
+    routes,
     business: {
       name: fm.business_name || "", phone: fm.phone || "", email: fm.email || "", hours: fm.hours || "",
       home_city: fm.home_city || "", country: fm.country || "", location_code: fm.location_code || "",

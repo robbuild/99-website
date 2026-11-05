@@ -85,3 +85,9 @@ test("serveDist serves index.html per folder, types, and 404.html for missing pa
     assert.equal((await get("/../../etc/passwd")).status, 404);
   } finally { srv.close(); }
 });
+
+test("sitemap fallback guesses the page type from Swedish and English hub segments", () => {
+  const xml = ["/", "/tjanster/", "/tjanster/stambyte/", "/omraden/knivsta/", "/blogg/", "/blogg/x/", "/services/a/"].map((u) => `<loc>https://x.se${u}</loc>`).join("");
+  assert.deepEqual(pagesFromSitemap(xml).map((p) => `${p.url} ${p.type}`),
+    ["/ home", "/tjanster/ hub", "/tjanster/stambyte/ service", "/omraden/knivsta/ area", "/blogg/ hub", "/blogg/x/ blog", "/services/a/ service"]);
+});

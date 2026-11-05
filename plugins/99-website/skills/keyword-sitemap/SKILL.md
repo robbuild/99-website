@@ -63,17 +63,18 @@ Record each decision (kept, merged into another page as a section, turned into a
 
 - Transactional: service page. Commercial: comparison blog post. Informational: blog post, or an FAQ on the related service page when the answer is short. Navigational: existing page (home, contact). Question variations: FAQ block, never a page per variation.
 - Home page targets "<main service> <home city>". There is no area page for the home city. If that phrase belongs to a service page (the business has several services and the main one has its own page), the home page takes the umbrella term instead (My Inclusion: home = "ndis registered provider melbourne", support coordination page = "support coordination melbourne"). One keyword per page still applies.
-- Area pages (`/areas-served/<town>-<state>/`) only when `areas.md` lists at least two towns beyond the home city AND there is demand or the results support local pages. No service times town matrix.
+- Area pages (`/areas-served/<town>-<state>/`, or `/omraden/<ort>/` on a Swedish site) only when `areas.md` lists at least two towns beyond the home city AND there is demand or the results support local pages. No service times town matrix.
 - Rebuild mode: **pages that already exist keep their URL**, even when it breaks the pattern above (My Inclusion keeps `/locations/<suburb>/` and the `/locations/` hub). A page that ranks or earns impressions is not moved to match our pattern. Only brand-new pages follow the pattern. Existing blog posts with clicks or impressions are kept (`keep`), each with its own target keyword from its best GSC query; they count toward the blog, so plan only the new posts on top.
 - Blog: in rebuild mode, count the kept posts first and plan only new posts on top. Plan 3 to 5 posts, each answering a real question from Step 2 and each linking up to one service page. The first 2 are `phase=now`, the rest `later`.
 - Always include: `/` (home), `/services/` (hub), `/about/`, `/contact/`, `/privacy-policy/` (legal). Add `/areas-served/` and `/blog/` hubs only if they have children.
+- **URL parts follow the site language** (`language_code` in `client.md`). The table is `scripts/lib/routes.mjs`: English `services, areas-served, blog, about, contact, privacy-policy`; Swedish `tjanster, omraden, blogg, om-oss, kontakt, integritetspolicy`. Write the URLs of the site's language in the plan; `validate-sitemap.mjs` reads the language itself (or `--lang sv`). The service, post and town slugs are keyword slugs in the site language without å, ä, ö (`rormokare`, `badrumsrenovering`).
 
 ## Step 7: Write `research/site-map.csv`
 
 Header, exactly: `url,slug,page_name,title_tag,page_type,parent,target_keyword,volume,kd,intent,primary_cta,phase,data_source,notes`
 
 - `page_type`: home, hub, service, area, blog, about, contact, legal.
-- `url`: `/services/<slug>/`, `/areas-served/<town>-<state>/`, `/blog/<question-slug>/`, `/<slug>/` for about, contact, legal. Lowercase, hyphens, trailing slash, keyword only (no filler, no dates).
+- `url`: `/services/<slug>/`, `/areas-served/<town>-<state>/`, `/blog/<question-slug>/`, `/<slug>/` for about, contact, legal (English). Swedish: `/tjanster/<slug>/`, `/omraden/<ort>/`, `/blogg/<fraga-slug>/`, `/om-oss/`, `/kontakt/`, `/integritetspolicy/`. Lowercase, hyphens, trailing slash, keyword only (no filler, no dates).
 - `title_tag`: 60 characters or fewer, keyword first, then a differentiator, then the brand. Unique. For a sensitive niche, no promises.
 - `target_keyword`: one per page, never repeated. Blank for hub, about, contact, legal.
 - `volume`, `kd`: straight from the tool, or blank. Never estimated.

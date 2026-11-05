@@ -31,3 +31,15 @@ test("never overwrites a file the user edited", () => {
   assert.equal(fs.readFileSync(path.join(site, "site/src/pages/index.astro"), "utf8"), "edited");
   assert.ok(r.skipped.includes("src/pages/index.astro"));
 });
+
+test("the thank-you page is named after the site language", () => {
+  const t = fs.mkdtempSync(path.join(os.tmpdir(), "tpl-"));
+  fs.mkdirSync(path.join(t, "src/pages"), { recursive: true });
+  fs.writeFileSync(path.join(t, "src/pages/thanks.astro"), "thanks");
+  fs.writeFileSync(path.join(t, "src/pages/index.astro"), "hi");
+  const en = fs.mkdtempSync(path.join(os.tmpdir(), "s-"));
+  const sv = fs.mkdtempSync(path.join(os.tmpdir(), "s-"));
+  assert.deepEqual(scaffoldSite(en, t, "en").created.sort(), ["src/pages/index.astro", "src/pages/thanks.astro"]);
+  assert.deepEqual(scaffoldSite(sv, t, "sv-SE").created.sort(), ["src/pages/index.astro", "src/pages/tack.astro"]);
+  assert.ok(fs.existsSync(path.join(sv, "site/src/pages/tack.astro")));
+});
